@@ -2,7 +2,9 @@ import { join } from 'path';
 import { readFile } from 'fs/promises';
 import { createServer, ServerResponse } from 'http';
 import { build, BuildOptions, BuildResult, OnLoadResult, Plugin, serve } from 'esbuild';
+import copy from 'cpy';
 import minimatch from 'minimatch';
+import debounce from 'lodash.debounce';
 import yargs from 'yargs/yargs';
 import chokidar, { FSWatcher } from 'chokidar';
 import postcss from 'postcss';
@@ -10,6 +12,7 @@ import postcssLoadConfig from 'postcss-load-config';
 
 interface Watchers {
     src: FSWatcher;
+    assets: FSWatcher;
 }
 
 function postcssPlugin(): Plugin {
@@ -38,10 +41,19 @@ function postcssPlugin(): Plugin {
 
 const srcPath = join(process.cwd(), '/src');
 const srcGlob = `${srcPath}/**/*.{ts,tsx,css}`;
+const assetGlob = ['package.json', `${srcPath}/**/*.html`];
+
+async function copyAssets(watchers: Watchers | null) {
+    console.log('Copying assets to dist');
+    if (watchers) {
+        watchers.assets.on('all', () => void copyAssets(null));
+    }
+    return await copy(assetGlob, 'dist');
+}
 
 const sharedConfig: BuildOptions = {
-    sourcemap: true,
-    target: 'es6',
+    sourcemap: 'inline',
+    target: 'esnext',
     tsconfig: 'tsconfig-build.json',
     entryPoints: [`src/index.tsx`],
     bundle: true,
@@ -50,7 +62,7 @@ const sharedConfig: BuildOptions = {
     },
 };
 
-async function buildAll(plugins: Plugin[], watchers?: Watchers) {
+async function buildAll(plugins: Plugin[], watchers?: Watchers, port?: number) {
     console.time('Built in');
     let buildResult: BuildResult | undefined;
 
@@ -60,6 +72,13 @@ async function buildAll(plugins: Plugin[], watchers?: Watchers) {
         } else {
             buildResult = await build({
                 ...sharedConfig,
+                banner: port
+                    ? {
+                          js: ` (() => new EventSource("http://localhost:${
+                              port + 1
+                          }").onmessage = () => location.reload())();`,
+                      }
+                    : undefined,
                 outdir: 'dist',
                 format: 'cjs',
                 plugins,
@@ -111,10 +130,11 @@ async function serveAll(port: number, watchers: Watchers, plugins: Plugin[]) {
     );
 
     const clients: ServerResponse[] = [];
-    watchers.src.on('all', () => {
+    const reloadClients = debounce(() => {
         clients.forEach((res) => res.write('data: update\n\n'));
         clients.length = 0;
-    });
+    }, 250);
+    watchers.src.on('all', reloadClients);
 
     createServer((req, res) => {
         res.writeHead(200, {
@@ -146,11 +166,14 @@ async function cli() {
     if (args.watch) {
         const watchers: Watchers = {
             src: chokidar.watch([srcGlob], { ignoreInitial: true }),
+            assets: chokidar.watch(assetGlob, { ignoreInitial: true }),
         };
         await serveAll(args.port, watchers, plugins);
-        await buildAll(plugins, watchers);
+        await buildAll(plugins, watchers, args.port);
+        await copyAssets(watchers);
     } else {
         await buildAll(plugins);
+        await copyAssets(null);
     }
 }
 
