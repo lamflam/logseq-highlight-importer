@@ -6,7 +6,7 @@
   "logseq": {},
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && concurrently npm:build:j npm:build:types",
+    "build": "npm run clean && concurrently npm:build:js npm:build:types",
     "build:js": "npm run ts src/build.ts",
     "build:types": "tsc -p tsconfig-build.json --noEmit",
     "build:watch:js": "npm run ts src/build.ts -- --watch",
