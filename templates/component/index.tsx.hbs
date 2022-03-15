@@ -1,0 +1,24 @@
+import React, { FC } from 'react';
+import './styles.css';
+
+
+/**
+ */
+interface {{name}}UIProps {}
+
+export const {{name}}UI: FC<{{name}}UIProps> = (props) => {
+    const { children } = props;
+    return <div>{children || '{{name}}UI'}</div>;
+};
+
+/** 
+ */
+export interface {{name}}Props {}
+
+/**
+ * Renders {{name}}
+ */
+export const {{name}}: FC<{{name}}Props> = (props) => {
+    const { children } = props;
+    return <{{name}}UI>{children}</{{name}}UI>;
+};
