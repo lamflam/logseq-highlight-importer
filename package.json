@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Typescript Project starting template",
   "main": "dist/index.html",
-  "logseq": {},
+  "logseq": {
+    "id": "_9h4j38ij8"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && concurrently npm:build:js npm:build:types",
