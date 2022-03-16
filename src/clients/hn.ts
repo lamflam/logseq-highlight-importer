@@ -48,7 +48,6 @@ export class HNClient {
             if (page.length !== 30 * limit || favorites.find((f) => f.id === this.since)) break;
             offset += limit;
         }
-        debugger;
         const sinceIndex = favorites.findIndex((f) => f.id === this.since);
         return sinceIndex >= 0 ? favorites.filter((_, idx) => idx < sinceIndex) : favorites;
     };

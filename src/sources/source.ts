@@ -39,6 +39,7 @@ export abstract class Source {
             page = await createPage(bookmark.hash, bookmark.title, {
                 tags: bookmark.tags,
                 url: bookmark.url,
+                created: bookmark.created ? await getJournalLink(bookmark.created) : undefined,
                 ...bookmark.properties,
             });
         }
