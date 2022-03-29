@@ -91,6 +91,27 @@ function init() {
             title: 'Readwise Last Synced Timestamp',
             description: 'Timestamp for last time Readwise was synced.',
         },
+        {
+            key: 'pocketConsumerKey',
+            type: 'string',
+            default: null,
+            title: 'Pocket Consumer Key',
+            description: 'Pocket Consumer Key',
+        },
+        {
+            key: 'pocketAccessToken',
+            type: 'string',
+            default: null,
+            title: 'Pocket Access Token',
+            description: 'Pocket Access Token',
+        },
+        {
+            key: 'pocketLastSync',
+            type: 'string',
+            default: null,
+            title: 'Pocket Last Synced Timestamp',
+            description: 'Timestamp for last time Pocket was synced.',
+        },
     ]);
     ReactDOM.render(<App />, document.getElementById('root'));
 }

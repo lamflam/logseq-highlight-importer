@@ -23,4 +23,7 @@ interface PluginSettings {
     hnLastSync: string;
     rwApiKey: string;
     rwLastSync: string;
+    pocketConsumerKey: string;
+    pocketAccessToken: string;
+    pocketLastSync: string;
 }
