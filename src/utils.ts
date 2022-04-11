@@ -15,7 +15,7 @@ interface Block extends BlockEntity {
 
 export async function createPage(hash: string, title: string, properties: Properties) {
     let pageTitle = normalizeTitle(title, 100);
-    const existing = await getPage(pageTitle);
+    const existing = await getPageByTitle(pageTitle);
     if (existing) {
         pageTitle = normalizeTitle(title, 100, hash);
     }
@@ -23,6 +23,11 @@ export async function createPage(hash: string, title: string, properties: Proper
     if (!page) throw `Error creating page: ${title}`;
     await upsertPageProperties(page, { hash, ...properties });
     return page;
+}
+
+async function getPageByTitle(title: string): Promise<Page | undefined> {
+    const results = await logseq.DB.getPage(title);
+    return (results?.[0] as Page) || undefined;
 }
 
 async function getPageByHash(hash: string): Promise<Page | undefined> {
